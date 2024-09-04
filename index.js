@@ -6,10 +6,11 @@ const TelegramBot = require('node-telegram-bot-api');
 const keep_alive = require('./keep_alive.js');
 
 const token = '7528519613:AAEgQYdI1O6l8ccp6mPXciXKdvH5u97G6j4';
-const bot = new TelegramBot(token, { polling: true });
+const bot = new TelegramBot(token, {polling: true});
 let accountList = [];
 
 let chatIds = [];
+
 async function sendTelegramMessage(message) {
     for (const id of chatIds) {
         try {
@@ -208,7 +209,7 @@ async function executeMains(n) {
     const promises = [];
     for (let i = 0; i < n; i++) {
         promises.push(main());
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        await new Promise(resolve => setTimeout(resolve, 3000));
     }
     await Promise.all(promises);
 }
@@ -217,27 +218,33 @@ async function executeMains(n) {
 bot.on('message', async (msg) => {
     const messageChatId = msg.chat.id;
     const text = msg.text;
-    const username = msg.from.username ? msg.from.username : "Không có tên người dùng";  // Default if username is undefined
-    const firstName = msg.from.first_name ? msg.from.first_name : "Không có tên";  // Default if first name is undefined
-    const lastName = msg.from.last_name ? msg.from.last_name : "";  // Default if last name is undefined
+    const username = msg.from.username ? msg.from.username : "Không có tên người dùng";  // Mặc định nếu không có tên người dùng
+    const firstName = msg.from.first_name ? msg.from.first_name : "Không có tên";  // Mặc định nếu không có tên
+    const lastName = msg.from.last_name ? msg.from.last_name : "";  // Mặc định nếu không có họ
 
     console.log(messageChatId);
     if (!chatIds.includes(messageChatId)) {
         chatIds.push(messageChatId);
     }
 
-    const param = parseInt(text.trim());
-    if (!isNaN(param) && param > 0) {
-        await executeMains(param);
+    if (typeof text === 'string') {
+        const param = parseInt(text.trim());
+        if (param <= 10 && !isNaN(param) && param > 0) {
+            await executeMains(param);
 
-        if (accountList.length > 0) {
-            await sendTelegramMessage(`${firstName} ${lastName} (${username}) - Danh sách tài khoản McDonald:\n` + accountList.join('\n'));  // Include first name, last name, and username in the message
-            accountList = [];
+            if (accountList.length > 0) {
+                await sendTelegramMessage(`${firstName} ${lastName} (${username}) - Danh sách tài khoản McDonald:\n` + accountList.join('\n'));  // Bao gồm tên, họ, và tên người dùng trong tin nhắn
+                accountList = [];
+            } else {
+                await sendTelegramMessage('Không có tài khoản nào.');
+            }
         } else {
-            await sendTelegramMessage('Không có tài khoản nào.');
+            await sendTelegramMessage('Vui lòng gửi một số nguyên dương.');
         }
+
     } else {
-        await sendTelegramMessage('Vui lòng gửi một số nguyên dương.');
+        await sendTelegramMessage('Vui lòng gửi văn bản.');
     }
 });
+
 
