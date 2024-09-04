@@ -9,7 +9,6 @@ const token = '7528519613:AAEgQYdI1O6l8ccp6mPXciXKdvH5u97G6j4';
 const bot = new TelegramBot(token, { polling: true });
 let accountList = [];
 
-// const chatId = '1958068409';
 let chatIds = [];
 async function sendTelegramMessage(message) {
     for (const id of chatIds) {
@@ -218,7 +217,11 @@ async function executeMains(n) {
 bot.on('message', async (msg) => {
     const messageChatId = msg.chat.id;
     const text = msg.text;
-    console.log(messageChatId)
+    const username = msg.from.username ? msg.from.username : "Không có tên người dùng";  // Default if username is undefined
+    const firstName = msg.from.first_name ? msg.from.first_name : "Không có tên";  // Default if first name is undefined
+    const lastName = msg.from.last_name ? msg.from.last_name : "";  // Default if last name is undefined
+
+    console.log(messageChatId);
     if (!chatIds.includes(messageChatId)) {
         chatIds.push(messageChatId);
     }
@@ -228,8 +231,8 @@ bot.on('message', async (msg) => {
         await executeMains(param);
 
         if (accountList.length > 0) {
-            await sendTelegramMessage('Danh sách tài khoản McDonald:\n' + accountList.join('\n'));
-            accountList = []
+            await sendTelegramMessage(`${firstName} ${lastName} (${username}) - Danh sách tài khoản McDonald:\n` + accountList.join('\n'));  // Include first name, last name, and username in the message
+            accountList = [];
         } else {
             await sendTelegramMessage('Không có tài khoản nào.');
         }
@@ -237,3 +240,4 @@ bot.on('message', async (msg) => {
         await sendTelegramMessage('Vui lòng gửi một số nguyên dương.');
     }
 });
+
